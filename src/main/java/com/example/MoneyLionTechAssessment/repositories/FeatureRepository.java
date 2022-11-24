@@ -10,6 +10,5 @@ import java.util.Optional;
 @Repository
 public interface FeatureRepository extends CrudRepository<Feature, Long> {
     
-    Optional<Feature> findById(long id);
     Optional<Feature> findByFeatureName(String featureName);
 }

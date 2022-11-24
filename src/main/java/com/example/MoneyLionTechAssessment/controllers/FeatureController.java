@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.MoneyLionTechAssessment.models.*;
 import com.example.MoneyLionTechAssessment.services.*;
-import com.example.MoneyLionTechAssessment.repositories.*;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -20,12 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @RestController
 public class FeatureController {
     
-    @Autowired
-    private FeatureService featureService;
-    @Autowired
-    private EmailRepository emailRepository;
-    @Autowired
-    private FeatureEmailRepository featureEmailRepository;
+    @Autowired FeatureEmailService featureEmailService;
 
     @GetMapping("/feature")
     public Map<String, Boolean> feature(
@@ -37,54 +31,20 @@ public class FeatureController {
         map.put("canAccess", false);
 
         // if record exist in db, use it instead
-        featureEmailRepository.findByFeature_FeatureNameAndEmail_Email(featureName, email).ifPresent(user -> map.put("canAccess", user.isEnable()));
+        featureEmailService.findByFeature_FeatureNameAndEmail_Email(featureName, email).ifPresent(user -> map.put("canAccess", user.isEnable()));
         return map;
     }
 
     @PostMapping("/feature")
     public ResponseEntity<?> createFeature(@RequestBody RequestBodyFeatureEmail requestFeatureEmail){
         try {
-            
-            FeatureEmail featureEmail;
-            var getFeatureEmail = featureEmailRepository.findByFeature_FeatureNameAndEmail_Email(requestFeatureEmail.featureName, requestFeatureEmail.email);
-            if(getFeatureEmail.isPresent()){
-                featureEmail = getFeatureEmail.get();
-
-                // enable status is same
-                if(featureEmail.isEnable() == requestFeatureEmail.enable){
-                    return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
-                }
-                else{
-                    featureEmail.setEnable(requestFeatureEmail.enable);
-                    featureEmailRepository.save(featureEmail);
-                }
+            Boolean success_db_update = featureEmailService.toggleFeaturebyEmail(requestFeatureEmail.featureName, requestFeatureEmail.email, requestFeatureEmail.enable);
+            if(success_db_update){
+                return new ResponseEntity<>(HttpStatus.OK);
             }
             else{
-                Feature feature;
-                var getFeature = featureService.findByFeatureName(requestFeatureEmail.featureName);
-                if(getFeature.isPresent()){
-                    feature = getFeature.get();
-                }
-                else{
-                    feature = new Feature(requestFeatureEmail.featureName);
-                    featureService.addFeature(feature);
-                }
-    
-                Email email;
-                var getEmail = emailRepository.findByEmail(requestFeatureEmail.email);
-                if(getEmail.isPresent()){
-                    email = getEmail.get();
-                }
-                else{
-                    email = new Email(requestFeatureEmail.email);
-                    emailRepository.save(email);
-                }
-
-                // create new record
-                featureEmailRepository.save(new FeatureEmail(feature, email, requestFeatureEmail.enable));
+                return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
             }
-
-            return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             System.out.println(e);
             return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);

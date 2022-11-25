@@ -1,0 +1,17 @@
+service: MoneyLionTechAssessment
+provider:
+  name: aws
+  runtime: java11
+package:
+  artifact: build/distributions/MoneyLionTechAssessment-0.0.1-SNAPSHOT.zip
+functions:
+  springBootServerless:
+    handler: com.example.MoneyLionTechAssessment.LambdaHandler::handleRequest
+    events:
+      - http:
+          path: /feature
+          method: get
+      - http:
+          path: /feature
+          method: post
+    timeout: 30

@@ -1,3 +1,15 @@
+buildscript {
+   ext {
+      springBootVersion = '2.7.5'
+   }
+   repositories {
+      mavenCentral()
+   }
+   dependencies {
+      classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+   }
+}
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '2.7.5'
@@ -6,15 +18,31 @@ plugins {
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '19'
+sourceCompatibility = '11'
+targetCompatibility = '11'
 
 repositories {
 	mavenCentral()
 }
 
+// Task for building the zip file for upload
+task buildZip(type: Zip) {
+   // set the base name of the zip file
+   from compileJava
+   from processResources
+   into('lib') {
+      from configurations.runtimeClasspath
+   }
+}
+build.dependsOn buildZip
+wrapper {
+   gradleVersion = '7.6'
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'com.amazonaws.serverless:aws-serverless-java-container-spring:1.1'
 	runtimeOnly 'org.postgresql:postgresql'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

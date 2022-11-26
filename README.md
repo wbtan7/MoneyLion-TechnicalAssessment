@@ -35,7 +35,7 @@ serverless deploy --region ap-southeast-1
 
 - [x] Requirement GET/POST API Endpoints
 - [x] Connected to managed PostgreSQL on cloud (ElephantSQL because is free!) 
-- [] Automated test
-- [] Frontend
+- [x] Automated test
+- [ ] Frontend
 - [x] Hosting
-- [] Domain Name
+- [ ] Domain Name
